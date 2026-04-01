@@ -77,3 +77,24 @@ The nodes are NotReady for the lack of a network plugin.
 ```bash
 cilium install --version
 ```
+
+## Helm chart deployment
+To check if the cluster run seuccessfully, we can deploy nginx with Helm chart
+1. Firt, we need to add helm chart repository from bitnami with following command
+```bash
+helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+2. Then we deploy the application with our custom values
+```bash
+helm install my-nginx bitnami/nginx --version 22.6.10 -f helm/values.yaml
+```
+3. In order to access the application, we will check the services and read the port, which the service is listening with
+```bash
+kubectl get svc
+```
+4. The application should be reachable by a browser with any node ip and given port
+
+## Limitations
+1. The cluster is built on top of VirtualBox with no underlying network control. For convenience we have choosen bridge network, which allow all communication by default. On local network, it is no big issue, but in Production, underlying network architect require careful consideration and control.
+2. No storage solution has been integrated, therefore it relies on local storage.
+
