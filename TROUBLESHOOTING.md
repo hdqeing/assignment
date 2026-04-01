@@ -17,11 +17,11 @@ After deploying the application, I checked the status of the pods with `kubectl 
     ```bash
     kubectl logs <pod-name>
 
-    This showed logs from another container running in the same pod.
+This showed logs from another container running in the same pod.
 
 4. **Checked logs of the nginx container**
     Finally, I checked the logs specifically for the nginx container:
     ```bash
     kubectl logs <pod-name> -c nginx
 
-    At this point, I discovered that the systemctl command was not available in the container. Therefore, the nginx container failed to start.
+At this point, I discovered that the systemctl command was not available in the container. Therefore, the nginx container failed to start.
