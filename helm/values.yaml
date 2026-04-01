@@ -1,0 +1,14 @@
+cloneStaticSiteFromGit:
+  branch: main
+  enabled: true
+  repository: https://github.com/mdn/beginner-html-site-styled.git
+service:
+  type: NodePort
+replicaCount: 3
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+  limits:
+    memory: "128Mi"
+    cpu: "500m"

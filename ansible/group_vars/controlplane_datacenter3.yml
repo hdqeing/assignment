@@ -1,0 +1,3 @@
+# group_vars/controlplane_datacenter1.yml
+timezone_name: Asia/Shanghai
+chrony_ntp_sources: cn.pool.ntp.org

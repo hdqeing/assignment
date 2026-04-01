@@ -1,0 +1,113 @@
+---
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+
+- name: ensure kernel modules config
+  copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+
+- name: load kernel modules
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - overlay
+    - br_netfilter
+
+- name: set sysctl params
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { name: net.bridge.bridge-nf-call-iptables, value: 1 }
+    - { name: net.bridge.bridge-nf-call-ip6tables, value: 1 }
+    - { name: net.ipv4.ip_forward, value: 1 }
+
+- name: update apt cache
+  apt:
+    update_cache: yes
+
+- name: install required packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+    state: present
+
+- name: ensure apt keyrings directory exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: download kubernetes apt key
+  get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key
+    dest: /tmp/kubernetes-release.key
+    mode: "0644"
+
+- name: download crio apt key
+  get_url:
+    url: https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v1.35/deb/Release.key
+    dest: /tmp/crio-release.key
+    mode: "0644"
+
+- name: convert key to gpg format
+  command: >
+    gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    /tmp/kubernetes-release.key
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: convert crio key to gpg format
+  command: >
+    gpg --dearmor -o /etc/apt/keyrings/crio-apt-keyring.gpg
+    /tmp/crio-release.key
+  args:
+    creates: /etc/apt/keyrings/crio-apt-keyring.gpg
+
+- name: add kubernetes apt repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.35/deb/ /"
+    filename: kubernetes
+    state: present
+
+- name: add crio apt repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/crio-apt-keyring.gpg] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v1.35/deb/ /"
+    filename: crio
+    state: present
+
+- name: install kubernetes components
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+      - cri-o
+    state: present
+    update_cache: yes
+
+- name: hold kubernetes packages
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: start crio
+  ansible.builtin.systemd_service:
+    name: crio.service
+    state: started

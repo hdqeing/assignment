@@ -1,0 +1,3 @@
+# group_vars/controlplane_datacenter2.yml
+timezone_name: America/New_York
+chrony_ntp_sources: us.pool.ntp.org
