@@ -64,13 +64,16 @@ To create the cluster:
 kubeadm init
 ```
 Wait until cluster is bootstrapped and you will see a command for joining the cluster.
+
 3. On the other servers, use the command to join the cluster
+   
 4. After the two other nodes have joined the cluster, check the status of the cluster with 
 ```bash
 kubectl get nodes
 ```
 The nodes are NotReady for the lack of a network plugin.
-4. Install a Network Plugin of your choice. Cilium is a powerful Network Plugin. It can be installed on Bastion host with cilium cli
+
+5. Install a Network Plugin of your choice. Cilium is a powerful Network Plugin. It can be installed on Bastion host with cilium cli
 ```bash
 cilium install --version
 ```
