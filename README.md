@@ -39,10 +39,19 @@ To successfully deploy the cluster using this repository, the following prerequi
 
 Before deploying the cluster, the following preparation steps are required:
 
-1. Configure **Chrony**
-2. Run the **Ansible playbook**
-3. Perform **Kubernetes preparation**
-4. Run the **Ansible playbook** again  
+1. Configure timezone and `ntp`
+   ```bash
+   ansible-playbook -i hosts --private-key ssh-key -K -b chrony.yaml -u k8s
+   ```
+3. Install necessary packages
+   ```bash
+   ansible-playbook -i hosts --private-key ssh-key -K -b k8s.yaml -u k8s
+   ```
+
+5. Add an Admin user and ssh harden  
+   ```bash
+   ansible-playbook -i hosts --private-key ssh-key -K -b adminuser.yaml -u k8s
+   ```
 
 ## Cluster Initialization
 
