@@ -14,7 +14,7 @@ After deploying the application, I checked the status of the pods and noticed th
 
 3. **Checked pod logs (default container)**
     After ruling out resource issues, I examined the logs of the pod:
-
+    ```bash
     kubectl logs <pod-name>
 
 This showed logs from another container running in the same pod.
