@@ -1,19 +1,55 @@
-# assignment
-In this assignment, we deployed a 3 nodes kubernetes cluster with kubeadm. Due to the lack of resources and time limit, no dedicated worker nodes are deployed.
+# Assignment
 
-Comparing to other k8s distributions, such as kind or minikube, it is possible to deploy a production grade cluster with kubeadm when given careful consideration. With kubeadm, we are able to configure many parameters, such as networking CIDR, providing better integration with network devices, etcd connection, providing flexible extension and migration of the cluster, and munual certificate approval, making the cluster more secure. 
-For cni plugin, we have chosen cilium. Cilium has gained popularity with the expansion of kubernetes based data center in recent years. Leveraging ebpf feature from Linux Kernel, it provides faster and flexible package forwarding and filtering comparing to iptable based cni plugins. Besides, it provides more feature than some other cni plugins such as observability, egress, service mesh and even Gateway API. Last but not least, it comes with a CLI tool, which greatly reduce the learning and administration overhead comparing to other network plugins.
+In this assignment, we deployed a 3-node Kubernetes cluster using `kubeadm`. Due to limited resources and time constraints, no dedicated worker nodes were deployed.
 
-For successful deployment for the cluster with this repository, following prerequisite should be satisfied:
-3 Nodes running ubuntu server;
-1 Bastion host running ansible;
-kubeadm should be installed on Bastion host;
-helm chart should be installed on Bastion host;
+## Comparison with Other Kubernetes Distributions
 
-Before deploying the cluster, there are several steps for preparation:
-chrony setting
-ansible-playbook
-kubernetes preparation
-ansible-playbook
+Compared to other Kubernetes distributions such as **kind** or **minikube**, `kubeadm` enables the deployment of a production-grade cluster when configured carefully.
 
-to create the cluster, we will need to login to one of the 3 nodes (bootstrapper) and run kubeadm init command
+With `kubeadm`, we can customize many parameters, including:
+
+- **Networking CIDR** — allowing better integration with network devices  
+- **etcd configuration** — enabling flexible cluster extension and migration  
+- **Manual certificate approval** — improving cluster security  
+
+## CNI Plugin Choice: Cilium
+
+For the CNI plugin, we selected **Cilium**.
+
+Cilium has gained popularity alongside the growth of Kubernetes-based data centers. By leveraging the **eBPF** feature of the Linux kernel, it provides faster and more flexible packet forwarding and filtering compared to traditional `iptables`-based CNI plugins.
+
+Additional advantages of Cilium include:
+
+- Enhanced **observability**
+- Support for **egress control**
+- Built-in **service mesh capabilities**
+- Support for the **Gateway API**
+- A dedicated **CLI tool**, which reduces learning and administrative overhead compared to other network plugins  
+
+## Prerequisites
+
+To successfully deploy the cluster using this repository, the following prerequisites must be met:
+
+- 3 nodes running **Ubuntu Server**
+- 1 bastion host running **Ansible**
+- `kubeadm` installed on the bastion host
+- `helm` installed on the bastion host  
+
+## Preparation Steps
+
+Before deploying the cluster, the following preparation steps are required:
+
+1. Configure **Chrony**
+2. Run the **Ansible playbook**
+3. Perform **Kubernetes preparation**
+4. Run the **Ansible playbook** again  
+
+## Cluster Initialization
+
+To create the cluster:
+
+1. Log in to one of the three nodes (the **bootstrap node**)  
+2. Run the following command:
+
+```bash
+kubeadm init
