@@ -1,0 +1,8 @@
+admin_user: adminuser
+admin_group: admin
+admin_shell: /bin/bash
+admin_ssh_public_key: ""
+admin_passwordless_sudo: true
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"
+ssh_pubkey_authentication: "yes"

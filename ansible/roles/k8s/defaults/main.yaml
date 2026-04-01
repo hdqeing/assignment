@@ -1,0 +1,45 @@
+kubernetes_version: "v1.35"
+
+k8s_kernel_modules:
+  - overlay
+  - br_netfilter
+
+k8s_sysctl_params:
+  - name: net.bridge.bridge-nf-call-iptables
+    value: "1"
+  - name: net.bridge.bridge-nf-call-ip6tables
+    value: "1"
+  - name: net.ipv4.ip_forward
+    value: "1"
+
+k8s_required_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gpg
+
+k8s_repositories:
+  - name: kubernetes
+    url: "https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/"
+    key_url: "https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/Release.key"
+    key_tmp: "/tmp/kubernetes-release.key"
+    keyring: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version }}/deb/ /"
+
+  - name: crio
+    url: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ kubernetes_version }}/deb/"
+    key_url: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ kubernetes_version }}/deb/Release.key"
+    key_tmp: "/tmp/crio-release.key"
+    keyring: "/etc/apt/keyrings/crio-apt-keyring.gpg"
+    repo: "deb [signed-by=/etc/apt/keyrings/crio-apt-keyring.gpg] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ kubernetes_version }}/deb/ /"
+
+k8s_packages:
+  - kubelet
+  - kubeadm
+  - kubectl
+  - cri-o
+
+k8s_hold_packages:
+  - kubelet
+  - kubeadm
+  - kubectl

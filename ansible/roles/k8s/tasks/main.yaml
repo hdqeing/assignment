@@ -1,113 +1,83 @@
 ---
-- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
-  replace:
+- name: Disable SWAP in fstab
+  ansible.builtin.replace:
     path: /etc/fstab
     regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
     replace: '# \1'
 
-- name: ensure kernel modules config
-  copy:
+- name: Ensure kernel modules config
+  ansible.builtin.copy:
     dest: /etc/modules-load.d/k8s.conf
+    mode: "0644"
     content: |
-      overlay
-      br_netfilter
+      {% for module in k8s_kernel_modules %}
+      {{ module }}
+      {% endfor %}
 
-- name: load kernel modules
-  modprobe:
+- name: Load kernel modules
+  ansible.builtin.modprobe:
     name: "{{ item }}"
     state: present
-  loop:
-    - overlay
-    - br_netfilter
+  loop: "{{ k8s_kernel_modules }}"
 
-- name: set sysctl params
-  sysctl:
+- name: Set sysctl params
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     state: present
-    reload: yes
-  loop:
-    - { name: net.bridge.bridge-nf-call-iptables, value: 1 }
-    - { name: net.bridge.bridge-nf-call-ip6tables, value: 1 }
-    - { name: net.ipv4.ip_forward, value: 1 }
+    reload: true
+  loop: "{{ k8s_sysctl_params }}"
 
-- name: update apt cache
-  apt:
-    update_cache: yes
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
 
-- name: install required packages
-  apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gpg
+- name: Install required packages
+  ansible.builtin.apt:
+    name: "{{ k8s_required_packages }}"
     state: present
 
-- name: ensure apt keyrings directory exists
-  file:
+- name: Ensure apt keyrings directory exists
+  ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: "0755"
 
-- name: download kubernetes apt key
-  get_url:
-    url: https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key
-    dest: /tmp/kubernetes-release.key
+- name: Download apt keys
+  ansible.builtin.get_url:
+    url: "{{ item.key_url }}"
+    dest: "{{ item.key_tmp }}"
     mode: "0644"
+  loop: "{{ k8s_repositories }}"
 
-- name: download crio apt key
-  get_url:
-    url: https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v1.35/deb/Release.key
-    dest: /tmp/crio-release.key
-    mode: "0644"
-
-- name: convert key to gpg format
-  command: >
-    gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-    /tmp/kubernetes-release.key
+- name: Convert apt keys to gpg format
+  ansible.builtin.command:
+    cmd: "gpg --dearmor -o {{ item.keyring }} {{ item.key_tmp }}"
   args:
-    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    creates: "{{ item.keyring }}"
+  loop: "{{ k8s_repositories }}"
 
-- name: convert crio key to gpg format
-  command: >
-    gpg --dearmor -o /etc/apt/keyrings/crio-apt-keyring.gpg
-    /tmp/crio-release.key
-  args:
-    creates: /etc/apt/keyrings/crio-apt-keyring.gpg
-
-- name: add kubernetes apt repository
-  apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.35/deb/ /"
-    filename: kubernetes
+- name: Add apt repositories
+  ansible.builtin.apt_repository:
+    repo: "{{ item.repo }}"
+    filename: "{{ item.name }}"
     state: present
+  loop: "{{ k8s_repositories }}"
 
-- name: add crio apt repository
-  apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/crio-apt-keyring.gpg] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v1.35/deb/ /"
-    filename: crio
+- name: Install kubernetes components
+  ansible.builtin.apt:
+    name: "{{ k8s_packages }}"
     state: present
+    update_cache: true
 
-- name: install kubernetes components
-  apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-      - cri-o
-    state: present
-    update_cache: yes
-
-- name: hold kubernetes packages
-  dpkg_selections:
+- name: Hold kubernetes packages
+  ansible.builtin.dpkg_selections:
     name: "{{ item }}"
     selection: hold
-  loop:
-    - kubelet
-    - kubeadm
-    - kubectl
+  loop: "{{ k8s_hold_packages }}"
 
-- name: start crio
+- name: Start crio
   ansible.builtin.systemd_service:
     name: crio.service
     state: started
+    enabled: true

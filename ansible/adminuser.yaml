@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - role: adminuser
+      vars:
+        admin_user: k8sadmin
+        admin_ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAI0u+HwOmoMLIi+rtNEI4mER2wTzQvlwIIjG1deT90J k8sadmin"
