@@ -43,12 +43,12 @@ Before deploying the cluster, the following preparation steps are required:
    ```bash
    ansible-playbook -i hosts --private-key ssh-key -K -b chrony.yaml -u k8s
    ```
-3. Install necessary packages
+2. Install necessary packages
    ```bash
    ansible-playbook -i hosts --private-key ssh-key -K -b k8s.yaml -u k8s
    ```
 
-5. Add an Admin user and ssh harden  
+3. Add an Admin user and ssh harden  
    ```bash
    ansible-playbook -i hosts --private-key ssh-key -K -b adminuser.yaml -u k8s
    ```
